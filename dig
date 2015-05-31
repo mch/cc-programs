@@ -1,0 +1,101 @@
+-- Ideas
+-- * Vein detection and extraction
+-- * branch mining
+-- * return to base when inventory full
+-- * gravel detection
+-- * switching tools based on block to dig
+
+local blocksMovedDown = 0
+local blocksMovedRight = 0
+
+equipPickaxe = function()
+   for i = 1,16 do
+      item = turtle.getItemDetail(i)
+      if item ~= nil then
+         print(item.name)
+         if string.find(item.name, "pickaxe") ~= nil then
+            turtle.select(i)
+            turtle.equipLeft()
+            break
+         end
+      end
+   end
+end
+
+shouldKeepDigging = function(isItemBelow, itemBelow)
+   local keepDigging = true
+   if isItemBelow then
+      print(itemBelow.name)
+   end
+
+   local stopAt = {}
+   stopAt['minecraft:bedrock'] = true
+   stopAt['minecraft:lava'] = true
+
+   if (isItemBelow and stopAt[itemBelow.name] ~= nil) then
+      keepDigging = false
+   else
+      keepDigging = true
+   end
+
+   return keepDigging
+end
+
+mineDownwards = function(isItemBelow)
+   local didDig = false
+   local keepDigging = true
+   if isItemBelow then
+      didDig = turtle.digDown()
+   end
+
+   if isItemBelow and not didDig then
+      print("Failed to dig!")
+      keepDigging = false
+   else
+      turtle.down()
+      blocksMovedDown = blocksMovedDown + 1
+      sleep(0.5)      
+   end
+
+   return keepDigging
+end
+
+mineArea = function()
+   for i = 1,4 do
+      local isItemInFront, itemInFront = turtle.inspect()
+
+      if (isItemInFront) then
+         turtle.dig()
+      end
+      turtle.forward()
+      turtle.turnLeft()
+   end
+end
+
+dig = function()
+   local isItemBelow, itemBelow = turtle.inspectDown()
+   local keepDigging = shouldKeepDigging(isItemBelow, itemBelow)
+   while (keepDigging) do 
+
+      mineArea()
+      keepDigging = mineDownwards(isItemBelow)
+
+      isItemBelow, itemBelow = turtle.inspectDown()
+      keepDigging = shouldKeepDigging(isItemBelow, itemBelow)
+   end
+end
+
+returnToSurface = function()
+   while (blocksMovedDown > 0) do
+      turtle.up()
+      blocksMovedDown = blocksMovedDown - 1
+   end
+end
+
+turtle.turnLeft()
+turtle.forward()
+turtle.turnRight()
+
+equipPickaxe()
+dig()
+returnToSurface()

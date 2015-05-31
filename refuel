@@ -1,0 +1,61 @@
+if (turtle == nil) then
+  print("This program only runs on turtles.")
+  return
+end
+
+isFuel = function(item) 
+   if (item == nil) then
+      return false
+   end
+
+   local fuel = {}
+   fuel['minecraft:coal'] = true
+   fuel['minecraft:stick'] = true
+   fuel['minecraft:lava_bucket'] = true
+   fuel['minecraft:blaze_rod'] = true
+   fuel['minecraft:planks'] = true
+   
+   if fuel[item.name] ~= nil then 
+      return true 
+   end
+   
+   -- Wooden tools and mushrooms
+   if (string.find(item.name, "minecraft:wooden") ~= nil) then
+      return true
+   end
+
+   if (string.find(item.name, "minecraft:.*mushroom") ~= nil) then
+      return true
+   end
+
+   return false
+end
+
+refuelFromInventory = function()
+   local startingFuel = turtle.getFuelLevel()
+
+   for i=1,16 do
+      item = turtle.getItemDetail(i)
+      if (item ~= nil) then
+         for k,v in ipairs(item) do
+            print(k)
+         end
+
+         if (isFuel(item)) then
+            turtle.select(i)
+            turtle.refuel()
+         end
+
+         if (turtle.getFuelLevel() == turtle.getFuelLimit()) then
+            print("Turtle fully fueled!")
+            break
+         end
+      end
+   end
+   
+   return turtle.getFuelLevel() - startingFuel
+end
+
+local fuelAdded = refuelFromInventory()
+print("Added " .. fuelAdded .. " moves worth of fuel.")
+print("Currently fueled for " .. turtle.getFuelLevel() .. " moves.")

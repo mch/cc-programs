@@ -1,0 +1,23 @@
+if (turtle == nil) then
+  print("This disk only works for turtles.")
+  return
+end
+
+local files = fs.list('disk')
+
+copyDiskToTurtle = function()
+   for i = 1,#files do
+      local name = files[i]
+      if not (string.find(name, '.*~') or string.find(name, 'startup')) then
+         if fs.exists(name) then
+            fs.delete(name)
+         end
+
+         fs.copy('disk/' .. name, name)
+      end
+   end
+end
+
+copyDiskToTurtle()
+shell.run('refuel')
+
